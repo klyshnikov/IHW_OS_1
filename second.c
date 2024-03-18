@@ -38,12 +38,12 @@ int getDigitNumber(int number) {
     return 1;
 }
 
-int main() {
+int main(int argc, char* argv[]) {
     int smallLetters = 0;
     int bigLetters = 0;
 
-    const int file_buf_size = 2048;
-    const int mes_1_size = 14;
+    const int file_buf_size = 5000;
+    const int mes_1_size = 100;
     const int mes_2_size = 100;
     unsigned long int two_numbers_size = 0;
 
@@ -60,7 +60,7 @@ int main() {
     char* name_2_3 = "2-3.fifo";
 
     char numbers_buffer[100];
-
+    for (int i = 0; i<100; ++i) {numbers_buffer[i] = ' ';}
 
     (void)umask(0);
     mknod(name_1_2, S_IFIFO | 0666, 0);
@@ -70,7 +70,7 @@ int main() {
 
     if (result_1 > 0) {
         // Process 1
-        fd_file = open("/home/misha/CppProj/IDZ1/input", O_RDONLY);
+        fd_file = open(argv[1], O_RDONLY);
 
         int read_bytes = read(fd_file, file_buffer, file_buf_size);
 
@@ -94,6 +94,7 @@ int main() {
 
             for (int i = 0; i<mes_1_size; ++i) {
                 int currentLetter = message_1_buffer[i];
+                if (message_1_buffer[i] == '\0') {break;}
                 if (isLetterSmall(currentLetter)) {
                     smallLetters++;
                 }
@@ -110,10 +111,8 @@ int main() {
             snprintf(number1, sizeof(number1), "%d", smallLetters);
             snprintf(number2, sizeof(number2), "%d", bigLetters);
 
-            //puts(number1);
-            //puts(number2);
 
-            strncat(number1, space, 10);
+            strncat(number1, space, 1);
             strncat(number1, number2, 10);
             //printf("%lu", sizeof(number1));
             two_numbers_size = sizeof(number1);
@@ -122,23 +121,35 @@ int main() {
 
             fd_second = open(name_2_3, O_WRONLY);
 
-            sleep(1);
-            size_1 = write(fd_second, number1, sizeof(number1));
+            //sleep(1);
+            size_1 = write(fd_second, number1, 50);
             close(fd_second);
 
         } else {
             // Process 3
-
             fd_second = open(name_2_3, O_RDONLY);
 
-            size_1 = read(fd_second, numbers_buffer, 3);
-            puts(numbers_buffer);
+            char new_buffer[100];
 
-            fd_file = open("/home/misha/CppProj/IDZ1/output2", O_WRONLY, 0666);
+            //sleep(1);
+            size_1 = read(fd_second, new_buffer, 100);
 
-            int write_bytes = write(fd_file, numbers_buffer, 3);
-            int g = write(fd_file, "qwe", 3);
+            //sleep(1);
+            puts(new_buffer);
 
+            for (int i = 0; i<100; ++i) {
+                if (new_buffer[i] < 48 || new_buffer[i] > 122) {
+                    new_buffer[i] = ' ';
+                }
+            }
+
+            puts(new_buffer);
+
+            fd_file = open(argv[2], O_WRONLY, 0666);
+
+            int writeWords1 = write(fd_file, "Small letters (first), big letters (second): ", 45);
+            sleep(1);
+            int write_bytes = write(fd_file, new_buffer, 100);
 
             close(fd_second);
         }
